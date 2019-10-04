@@ -31,6 +31,18 @@ document.addEventListener("DOMContentLoaded", function(event) {
         ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, canvas.width, canvas.height);
       }
       img.src = URL.createObjectURL(blobs[count]);
+      var fileReader = new FileReader();
+      fileReader.onload = (event) => {
+        var buffer = event.target.result;
+        var parser = window.ExifParser.create(buffer);
+        try {
+          var result = parser.parse();
+          console.log(result.tags)
+        } catch(err) {
+          console.log("exif parse error :-S", err)// got invalid data, handle error
+        }
+      };
+      fileReader.readAsArrayBuffer(blobs[count]);
       count = (count + 1) % blobs.length;
     }
   }, 2000)
