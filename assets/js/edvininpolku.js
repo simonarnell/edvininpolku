@@ -1,6 +1,8 @@
 var blobs = [];
 var points = []
 var count = 0;
+var totalImages;
+var featureCollection
 
 fetch('https://api.github.com/repos/simonarnell/edvininpolku/contents?ref=images')
   .then((response) => {
@@ -8,6 +10,7 @@ fetch('https://api.github.com/repos/simonarnell/edvininpolku/contents?ref=images
     response.json().then((data) => {
       console.debug(data)
       if(Array.isArray(data)) {
+        totalImages = data.length
         data.map(file => {
           fetch(file.download_url)
             .then((dlres) => dlres.blob())
@@ -19,6 +22,14 @@ fetch('https://api.github.com/repos/simonarnell/edvininpolku/contents?ref=images
                 var webworker = new Worker('assets/js/exif-webworker.js');
                 webworker.onmessage = (event) => {
                   points.push(JSON.parse(event.data))
+                  if(totalImages == points.length) {
+                    featureCollection = {
+                      "type": "FeatureCollection",
+                      "properties": {},
+                      "features": points.map(point => point)
+                    }
+                    console.log(featureCollection)
+                  }
                 }
                 webworker.postMessage(buffer, [buffer])
               };
