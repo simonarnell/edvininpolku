@@ -20,6 +20,13 @@ fetch('https://api.github.com/repos/simonarnell/edvininpolku/contents?ref=images
     console.log('error fetching images list :-S', err)
   })
 
+var webworker = new Worker('assets/js/webworker.js');
+webworker.onmessage = (event) => {
+  console.log('received :-S', event.data)
+}
+webworker.postMessage("ping")
+console.log("pinging webworker")
+
 document.addEventListener("DOMContentLoaded", function(event) {
   setInterval(() => {
     if(blobs.length > 0) {
