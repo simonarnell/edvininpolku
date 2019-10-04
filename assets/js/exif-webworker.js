@@ -5,6 +5,7 @@ onmessage = (event) => {
     var result = parser.parse();
     var position = {
       "type": "Feature",
+      "properties": {},
       "geometry": {
         "type": "Point",
         "coordinates": [result.tags.GPSLongitude,result.tags.GPSLatitude]
