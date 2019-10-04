@@ -5,7 +5,9 @@ fetch('https://api.github.com/repos/simonarnell/edvininpolku/contents?ref=images
       console.debug(data)
       if(Array.isArray(data)) {
         data.map(file => {
-          console.debug(file.download_url)
+          fetch(file.download_url)
+            .then((dlres) => console.debug(dlres))
+            .catch((err) => console.error('error fetching imag :-S', err))
         })
       }
     })
