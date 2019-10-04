@@ -4,7 +4,7 @@ fetch('https://api.github.com/repos/simonarnell/edvininpolku/contents?ref=images
     response.json().then((data) => {
       console.debug(data)
       if(Array.isArray(data)) {
-        data.forEach(file => {
+        data.map(file => {
           console.debug(file.download_url)
         })
       }
