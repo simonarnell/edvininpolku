@@ -1,4 +1,5 @@
 var blobs = [];
+var points = []
 var count = 0;
 
 fetch('https://api.github.com/repos/simonarnell/edvininpolku/contents?ref=images')
@@ -10,7 +11,19 @@ fetch('https://api.github.com/repos/simonarnell/edvininpolku/contents?ref=images
         data.map(file => {
           fetch(file.download_url)
             .then((dlres) => dlres.blob())
-            .then((blob) => blobs.push(blob))
+            .then((blob) => {
+              blobs.push(blob)
+              var fileReader = new FileReader();
+              fileReader.onload = (event) => {
+                var buffer = event.target.result;
+                var webworker = new Worker('assets/js/exif-webworker.js');
+                webworker.onmessage = (event) => {
+                  points.push(JSON.parse(event.data))
+                }
+                webworker.postMessage(buffer, [buffer])
+              };
+              fileReader.readAsArrayBuffer(blobs[count]);
+            })
             .catch((err) => console.error('error fetching imag :-S', err))
         })
       }
@@ -19,13 +32,6 @@ fetch('https://api.github.com/repos/simonarnell/edvininpolku/contents?ref=images
   .catch((err) => {
     console.log('error fetching images list :-S', err)
   })
-
-var webworker = new Worker('assets/js/webworker.js');
-webworker.onmessage = (event) => {
-  console.log('received :-S', event.data)
-}
-webworker.postMessage("ping")
-console.log("pinging webworker")
 
 document.addEventListener("DOMContentLoaded", function(event) {
   setInterval(() => {
@@ -38,19 +44,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
         ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, canvas.width, canvas.height);
       }
       img.src = URL.createObjectURL(blobs[count]);
-      var fileReader = new FileReader();
-      fileReader.onload = (event) => {
-        var buffer = event.target.result;
-        var parser = window.ExifParser.create(buffer);
-        try {
-          var result = parser.parse();
-          console.log(result.tags)
-        } catch(err) {
-          console.log("exif parse error :-S", err)// got invalid data, handle error
-        }
-      };
-      fileReader.readAsArrayBuffer(blobs[count]);
       count = (count + 1) % blobs.length;
+      console.log(points)
     }
   }, 2000)
 });
