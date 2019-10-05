@@ -35,7 +35,7 @@ Promise.resolve(configured).then(() => {
                       fileReader.readAsArrayBuffer(blob);
                     })
                   })
-                  .then(exif => resolve(exif))
+                  .then(geoJSONFeature => resolve(geoJSONFeature))
                   .catch((err) => console.error('error fetching image :-S', err))
               })
             }))
