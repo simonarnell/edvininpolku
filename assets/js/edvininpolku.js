@@ -1,7 +1,8 @@
 var blobs = [];
 var count = 0;
-var geoJSON
 var config
+var map
+var geoJSONLayer;
 
 var configured = fetch('assets/data/config.json')
   .then(response => response.json())
@@ -39,12 +40,16 @@ Promise.resolve(configured).then(() => {
               })
             }))
             .then((points) => {
-              geoJSON = {
+              return {
                 "type": "FeatureCollection",
                 "properties": {},
                 "features": points.map(point => point)
               }
-              console.debug(geoJSON)
+            })
+            .then((geoJSON) => {
+              console.debug(geoJSON);
+              geoJSONLayer.addData(geoJSON)
+              map.fitBounds(geoJSONLayer.getBounds())
             })
         }
       })
@@ -73,7 +78,7 @@ Promise.resolve(document.ready)
 
 Promise.all([document.ready, configured])
   .then(() => {
-    var map = L.map('map');
+    map = L.map('map');
     map.setView([51, 0], 13);
     L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
       attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
@@ -81,4 +86,5 @@ Promise.all([document.ready, configured])
       id: 'mapbox.streets',
       accessToken: config.apikeys.mapbox
     }).addTo(map);
+    geoJSONLayer = L.geoJSON().addTo(map);
   })
