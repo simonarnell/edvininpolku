@@ -13,7 +13,7 @@ fetch('https://api.github.com/repos/simonarnell/edvininpolku/contents?ref=images
         totalImages = data.length
         data.map(file => {
           fetch(file.download_url)
-            .then((dlres) => dlres.blob())
+            .then((response) => response.blob())
             .then((blob) => {
               blobs.push(blob)
               var fileReader = new FileReader();
