@@ -1,7 +1,7 @@
 var blobs = [];
 var points = []
 var count = 0;
-var featureCollection
+var geoJSON
 var config
 
 var configured = fetch('assets/data/config.json')
@@ -41,17 +41,18 @@ Promise.resolve(configured).then(() => {
         }))
         .then((points) => {
             console.debug(points)
-            featureCollection = {
+            geoJSON = {
               "type": "FeatureCollection",
               "properties": {},
               "features": points.map(point => point)
             }
-            console.log(featureCollection)
+            console.log(geoJSON)
         })
       }
     })
   })
 })
+
 document.ready = new Promise(
         (resolve) => document.addEventListener('DOMContentLoaded', resolve))
 
