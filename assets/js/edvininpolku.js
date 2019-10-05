@@ -1,7 +1,6 @@
 var blobs = [];
 var points = []
 var count = 0;
-var totalImages;
 var featureCollection
 
 fetch('https://api.github.com/repos/simonarnell/edvininpolku/contents?ref=images')
@@ -10,39 +9,39 @@ fetch('https://api.github.com/repos/simonarnell/edvininpolku/contents?ref=images
     response.json().then((data) => {
       console.debug(data)
       if(Array.isArray(data)) {
-        totalImages = data.length
-        data.map(file => {
-          fetch(file.download_url)
-            .then((response) => response.blob())
-            .then((blob) => {
-              blobs.push(blob)
-              var fileReader = new FileReader();
-              fileReader.onload = (event) => {
-                var buffer = event.target.result;
-                var webworker = new Worker('assets/js/exif-webworker.js');
-                webworker.onmessage = (event) => {
-                  points.push(JSON.parse(event.data))
-                  if(totalImages == points.length) {
-                    featureCollection = {
-                      "type": "FeatureCollection",
-                      "properties": {},
-                      "features": points.map(point => point)
-                    }
-                    console.log(featureCollection)
+        Promise.all(data.map(file => {
+          return new Promise((resolve) => {
+            fetch(file.download_url)
+              .then((response) => response.blob())
+              .then((blob) => {
+                blobs.push(blob)
+                var fileReader = new FileReader();
+                return new Promise((resolve) => {
+                  fileReader.onload = (event) => {
+                    var buffer = event.target.result;
+                    var webworker = new Worker('assets/js/exif-webworker.js');
+                    webworker.onmessage = (event) => resolve(JSON.parse(event.data))
+                    webworker.postMessage(buffer, [buffer])
                   }
-                }
-                webworker.postMessage(buffer, [buffer])
-              };
-              fileReader.readAsArrayBuffer(blobs[count]);
+                  fileReader.readAsArrayBuffer(blob);
+                })
+              })
+              .then(exif => resolve(exif))
+              .catch((err) => console.error('error fetching image :-S', err))
             })
-            .catch((err) => console.error('error fetching imag :-S', err))
-        })
-      }
-    })
+      }))
+      .then((points) => {
+          console.debug(points)
+          featureCollection = {
+            "type": "FeatureCollection",
+            "properties": {},
+            "features": points.map(point => point)
+          }
+          console.log(featureCollection)
+      })
+    }
   })
-  .catch((err) => {
-    console.log('error fetching images list :-S', err)
-  })
+})
 document.ready = new Promise(
         (resolve) => document.addEventListener('DOMContentLoaded', resolve))
 
@@ -59,7 +58,6 @@ Promise.resolve(document.ready)
         }
         img.src = URL.createObjectURL(blobs[count]);
         count = (count + 1) % blobs.length;
-        console.log(points)
       }
     }, 2000)
   })
