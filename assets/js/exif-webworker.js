@@ -8,11 +8,11 @@ onmessage = (event) => {
       "properties": {},
       "geometry": {
         "type": "Point",
-        "coordinates": [result.tags.GPSLongitude,result.tags.GPSLatitude]
+        "coordinates": [result.tags.GPSLongitude, result.tags.GPSLatitude]
       }
     }
     self.postMessage(JSON.stringify(position))
-  } catch(err) {
-    console.log("exif parse error :-S", err)// got invalid data, handle error
+  } catch (err) {
+    console.log("exif parse error :-S", err) // got invalid data, handle error
   }
 }
