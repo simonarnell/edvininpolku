@@ -39,13 +39,12 @@ Promise.resolve(configured).then(() => {
               })
         }))
         .then((points) => {
-            console.debug(points)
             geoJSON = {
               "type": "FeatureCollection",
               "properties": {},
               "features": points.map(point => point)
             }
-            console.log(geoJSON)
+            console.debug(geoJSON)
         })
       }
     })
