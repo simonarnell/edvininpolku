@@ -1,4 +1,7 @@
 {
+  "apikeys": {
+    "mapbox": "pk.eyJ1Ijoic2ltb25hcm5lbGwiLCJhIjoiY2sxZGI3cHhuMDR4czNubWQ0bjY0cDhjeCJ9.VSUy7rQLly7fpbc_XvaRYQ"
+  },
   "urls": {
     "imagesBranch": "https://api.github.com/repos/simonarnell/edvininpolku/contents?ref=images"
   }
