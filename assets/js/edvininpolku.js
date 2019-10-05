@@ -1,5 +1,4 @@
 var blobs = [];
-var points = []
 var count = 0;
 var geoJSON
 var config
