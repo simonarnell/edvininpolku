@@ -35,7 +35,11 @@ Promise.resolve(configured).then(() => {
                       fileReader.readAsArrayBuffer(blob);
                     })
                   })
-                  .then(geoJSONFeature => resolve(geoJSONFeature))
+                  .then(geoJSONFeature => {
+                    resolve(geoJSONFeature)
+                    geoJSONLayer.addData(geoJSONFeature)
+                    map.fitBounds(geoJSONLayer.getBounds())
+                  })
                   .catch((err) => console.error('error fetching image :-S', err))
               })
             }))
@@ -48,8 +52,7 @@ Promise.resolve(configured).then(() => {
             })
             .then((geoJSON) => {
               console.debug(geoJSON);
-              geoJSONLayer.addData(geoJSON)
-              map.fitBounds(geoJSONLayer.getBounds())
+
             })
         }
       })
