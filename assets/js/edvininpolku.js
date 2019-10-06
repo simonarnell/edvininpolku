@@ -1,4 +1,4 @@
-var blobs = [];
+var images = [];
 var count = 0;
 var config
 var map
@@ -23,7 +23,9 @@ Promise.resolve(configured).then(() => {
                 fetch(file.download_url)
                   .then((response) => response.blob())
                   .then((blob) => {
-                    blobs.push(blob)
+                    var img = new Image();
+                    img.src = URL.createObjectURL(blob);
+                    images.push(img)
                     var fileReader = new FileReader();
                     return new Promise((resolve) => {
                       fileReader.onload = (event) => {
@@ -72,17 +74,15 @@ document.ready = new Promise(
 Promise.resolve(document.ready)
   .then(() => {
     setInterval(() => {
-      if (blobs.length > 0) {
-        var canvas = document.getElementById('canvas');
-        var img = new Image();
-        img.onload = () => {
-          var ctx = canvas.getContext('2d')
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, canvas.width, canvas.height);
-        }
-        img.src = URL.createObjectURL(blobs[count]);
-        count = (count + 1) % blobs.length;
-      }
+      var canvas = document.getElementById('canvas');
+      var ctx = canvas.getContext('2d')
+      var img = images[count]
+      console.debug(img)
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, canvas.width, canvas.height);
+      count = (count + 1) % images.length;
     }, 2000)
   })
 
