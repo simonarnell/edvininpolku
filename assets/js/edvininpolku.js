@@ -2,7 +2,7 @@ var blobs = [];
 var count = 0;
 var config
 var map
-var geoJSONLayer;
+var geoJSONMarkerLayer, geoJSONPathLayer;
 
 var configured = fetch('assets/data/config.json')
   .then(response => response.json())
@@ -35,24 +35,31 @@ Promise.resolve(configured).then(() => {
                       fileReader.readAsArrayBuffer(blob);
                     })
                   })
-                  .then(geoJSONFeature => {
-                    resolve(geoJSONFeature)
-                    geoJSONLayer.addData(geoJSONFeature)
-                    map.fitBounds(geoJSONLayer.getBounds())
+                  .then(imageMetadata => {
+                    resolve(imageMetadata)
+                    geoJSONMarkerLayer.addData(imageMetadata.geoJSON)
+                    map.fitBounds(geoJSONMarkerLayer.getBounds())
                   })
                   .catch((err) => console.error('error fetching image :-S', err))
               })
             }))
-            .then((points) => {
+            .then((imagesMetadata) => imagesMetadata.sort((a, b) => a.timestamp - b.timestamp))
+            .then((imagesMetadata) => {
               return {
-                "type": "FeatureCollection",
-                "properties": {},
-                "features": points.map(point => point)
+                type: "FeatureCollection",
+                properties: {},
+                features: [{
+                  "type": "Feature",
+                  "properties": {},
+                  "geometry": {
+                    "type": "LineString",
+                    "coordinates": imagesMetadata.map(imageMetadata => imageMetadata.geoJSON.geometry.coordinates)
+                  }
+                }]
               }
             })
-            .then((geoJSON) => {
-              console.debug(geoJSON);
-
+            .then((geoJSONPath) => {
+              geoJSONPathLayer.addData(geoJSONPath)
             })
         }
       })
@@ -89,5 +96,14 @@ Promise.all([document.ready, configured])
       id: 'mapbox.streets',
       accessToken: config.apikeys.mapbox
     }).addTo(map);
-    geoJSONLayer = L.geoJSON().addTo(map);
+    geoJSONMarkerLayer = L.geoJSON().addTo(map);
+    geoJSONPathLayer = L.geoJSON(null, {
+      style: function(feature) {
+        return {
+          stroke: true,
+          color: "black",
+          weight: 5
+        };
+      },
+    }).addTo(map);
   })

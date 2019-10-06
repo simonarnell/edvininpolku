@@ -3,15 +3,17 @@ onmessage = (event) => {
   var parser = self.ExifParser.create(event.data);
   try {
     var result = parser.parse();
-    var position = {
-      "type": "Feature",
-      "properties": {},
-      "geometry": {
-        "type": "Point",
-        "coordinates": [result.tags.GPSLongitude, result.tags.GPSLatitude]
+    self.postMessage(JSON.stringify({
+      timestamp: new Date(result.tags.DateTimeOriginal * 1000),
+      geoJSON: {
+        "type": "Feature",
+        "properties": {},
+        "geometry": {
+          "type": "Point",
+          "coordinates": [result.tags.GPSLongitude, result.tags.GPSLatitude]
+        }
       }
-    }
-    self.postMessage(JSON.stringify(position))
+    }))
   } catch (err) {
     console.log("exif parse error :-S", err) // got invalid data, handle error
   }
