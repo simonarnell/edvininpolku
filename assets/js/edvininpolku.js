@@ -39,6 +39,54 @@ Promise.resolve(configured).then(() => {
                       .then((metadata) => {
                         image.metadata = metadata
                         image.metadata.geoJSON.properties.filename = file.name
+                        image.jsonld = {
+                          "@context": "http://schema.org",
+                          "@type": "Sculpture",
+                          "image": file.download_url,
+                          "author": {
+                            "@type": "Person",
+                            "name": "Edvin Hevonkoski",
+                            "sameAs": "https://en.wikipedia.org/wiki/Edvin_Hevonkoski"
+                          },
+                          "spatial": {
+                            "@type": "Place",
+                            "geo": {
+                              "@type": "GeoCoordinates",
+                              "latitude": image.metadata.geoJSON.geometry.coordinates[1],
+                              "longitude": image.metadata.geoJSON.geometry.coordinates[0]
+                            },
+                            "containedInPlace": {
+                              "@type": "Park",
+                              "name": "Edvininpolku",
+                              "alternateName": "Edvin's Art Park",
+                              "address": {
+                                "@type": "PostalAddress",
+                                "addressCountry": {
+                                  "@type": "Country",
+                                  "name": "FI"
+                                },
+                                "addressLocality": "Asevelikylä",
+                                "addressRegion": "Vaasa",
+                                "postalCode": "65300",
+                                "streetAddress": "Aleksis Kiventie 57"
+                              },
+                              "geo": {
+                                "@type": "GeoCoordinates",
+                                "latitude": "63.105246",
+                                "longitude": "21.664820"
+                              },
+                              "sameAs": [
+                                "https://fi.wikipedia.org/wiki/Edvininpolku",
+                                "https://www.vaasa.fi/asu-ja-ela/vapaa-aika/puistot-ja-viheralueet/puistot/edvininpolun-puisto/"
+                              ]
+                            }
+                          }
+                        }
+                        var scriptEl = document.createElement('script');
+                        scriptEl.setAttribute('type', 'application/ld+json');
+                        scriptEl.innerHTML = JSON.stringify(image.jsonld);
+                        var bodyEl = document.getElementsByTagName('body')[0];
+                        bodyEl.appendChild(scriptEl)
                         geoJSONMarkerLayer.addData(metadata.geoJSON)
                         map.fitBounds(geoJSONMarkerLayer.getBounds())
                         resolve(image)
