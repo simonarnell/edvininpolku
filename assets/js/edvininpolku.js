@@ -82,11 +82,6 @@ Promise.resolve(configured).then(() => {
                             }
                           }
                         }
-                        var scriptEl = document.createElement('script');
-                        scriptEl.setAttribute('type', 'application/ld+json');
-                        scriptEl.innerHTML = JSON.stringify(image.jsonld);
-                        var bodyEl = document.getElementsByTagName('body')[0];
-                        bodyEl.appendChild(scriptEl)
                         geoJSONMarkerLayer.addData(metadata.geoJSON)
                         map.fitBounds(geoJSONMarkerLayer.getBounds())
                         resolve(image)
@@ -97,7 +92,36 @@ Promise.resolve(configured).then(() => {
                   .catch((err) => console.error('error fetching image :- ', err))
               })
             }))
-            .then((images) => images.sort((a, b) => a.metadata.timestamp - b.metadata.timestamp))
+            .then((images) => {
+              var sortedImages = images.sort((a, b) => a.metadata.timestamp - b.metadata.timestamp)
+              sortedImages.forEach((image) => {
+                var scriptEl = document.createElement('script');
+                scriptEl.setAttribute('type', 'application/ld+json');
+                scriptEl.innerHTML = JSON.stringify(image.jsonld);
+                var bodyEl = document.getElementsByTagName('body')[0];
+                bodyEl.appendChild(scriptEl)
+                var sectionEl = document.createElement('section');
+                sectionEl.setAttribute('id', image.filename)
+                sectionEl.setAttribute('class', 'sculpture');
+                sectionEl.appendChild(image.img)
+                var collectionEl = document.getElementsByClassName('collection')[0]
+                collectionEl.appendChild(sectionEl)
+                var observer = new IntersectionObserver((entries, observer) => {
+                  geoJSONMarkerLayer.eachLayer((layer) => {
+                    if (layer.feature.properties.filename == entries[0].target.getAttribute('id'))
+                      layer.setIcon(new L.Icon.Default())
+                    else
+                      layer.setIcon(greyIcon)
+                  })
+                }, {
+                  root: null,
+                  rootMargin: '0px',
+                  threshold: 0.60
+                });
+                observer.observe(sectionEl);
+              })
+              return sortedImages;
+            })
             .then((images) => {
               this.images = images;
               return {
@@ -125,24 +149,7 @@ document.ready = new Promise(
   (resolve) => document.addEventListener('DOMContentLoaded', resolve))
 
 Promise.resolve(document.ready)
-  .then(() => {
-    setInterval(() => {
-      var canvas = document.getElementById('canvas');
-      var ctx = canvas.getContext('2d')
-      var img = images[count].img
-      canvas.width = img.naturalWidth;
-      canvas.height = img.naturalHeight;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, canvas.width, canvas.height);
-      geoJSONMarkerLayer.eachLayer((layer) => {
-        if (layer.feature.properties.filename == images[count].filename)
-          layer.setIcon(new L.Icon.Default())
-        else
-          layer.setIcon(greyIcon)
-      })
-      count = (count + 1) % images.length;
-    }, 2000)
-  })
+  .then(() => {})
 
 Promise.all([document.ready, configured])
   .then(() => {
