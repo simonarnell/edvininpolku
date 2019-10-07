@@ -15,6 +15,6 @@ onmessage = (event) => {
       }
     }))
   } catch (err) {
-    console.log("exif parse error :-S", err) // got invalid data, handle error
+    console.error("exif parse error :-S", err) // got invalid data, handle error
   }
 }

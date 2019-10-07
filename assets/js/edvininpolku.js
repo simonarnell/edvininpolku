@@ -7,16 +7,13 @@ var geoJSONMarkerLayer, geoJSONPathLayer;
 var configured = fetch('assets/data/config.json')
   .then(response => response.json())
   .then(json => {
-    console.debug(json)
     config = json
   })
 
 Promise.resolve(configured).then(() => {
   fetch(config.urls.imagesBranch)
     .then((response) => {
-      console.debug(response)
       response.json().then((data) => {
-        console.debug(data)
         if (Array.isArray(data)) {
           Promise.all(data.map(file => {
               return new Promise((resolve) => {
@@ -49,7 +46,7 @@ Promise.resolve(configured).then(() => {
                     images.push(image)
                     return image
                   })
-                  .catch((err) => console.error('error fetching image :-S', err))
+                  .catch((err) => console.error('error fetching image :- ', err))
               })
             }))
             .then((images) => images.sort((a, b) => a.metadata.timestamp - b.metadata.timestamp))
