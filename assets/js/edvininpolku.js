@@ -23,30 +23,38 @@ Promise.resolve(configured).then(() => {
                 fetch(file.download_url)
                   .then((response) => response.blob())
                   .then((blob) => {
+                    var image = {
+                      filename: file.name
+                    };
                     var img = new Image();
                     img.src = URL.createObjectURL(blob);
-                    images.push(img)
+                    image.img = img
                     var fileReader = new FileReader();
-                    return new Promise((resolve) => {
-                      fileReader.onload = (event) => {
-                        var buffer = event.target.result;
-                        var webworker = new Worker('assets/js/exif-webworker.js');
-                        webworker.onmessage = (event) => resolve(JSON.parse(event.data))
-                        webworker.postMessage(buffer, [buffer])
-                      }
-                      fileReader.readAsArrayBuffer(blob);
-                    })
-                  })
-                  .then(imageMetadata => {
-                    resolve(imageMetadata)
-                    geoJSONMarkerLayer.addData(imageMetadata.geoJSON)
-                    map.fitBounds(geoJSONMarkerLayer.getBounds())
+                    new Promise((resolve) => {
+                        fileReader.onload = (event) => {
+                          var buffer = event.target.result;
+                          var webworker = new Worker('assets/js/exif-webworker.js');
+                          webworker.onmessage = (event) => resolve(JSON.parse(event.data))
+                          webworker.postMessage(buffer, [buffer])
+                        }
+                        fileReader.readAsArrayBuffer(blob);
+                      })
+                      .then((metadata) => {
+                        image.metadata = metadata
+                        image.metadata.geoJSON.properties.filename = file.name
+                        geoJSONMarkerLayer.addData(metadata.geoJSON)
+                        map.fitBounds(geoJSONMarkerLayer.getBounds())
+                        resolve(image)
+                      })
+                    images.push(image)
+                    return image
                   })
                   .catch((err) => console.error('error fetching image :-S', err))
               })
             }))
-            .then((imagesMetadata) => imagesMetadata.sort((a, b) => a.timestamp - b.timestamp))
-            .then((imagesMetadata) => {
+            .then((images) => images.sort((a, b) => a.metadata.timestamp - b.metadata.timestamp))
+            .then((images) => {
+              this.images = images;
               return {
                 type: "FeatureCollection",
                 properties: {},
@@ -55,7 +63,7 @@ Promise.resolve(configured).then(() => {
                   "properties": {},
                   "geometry": {
                     "type": "LineString",
-                    "coordinates": imagesMetadata.map(imageMetadata => imageMetadata.geoJSON.geometry.coordinates)
+                    "coordinates": images.map(image => image.metadata.geoJSON.geometry.coordinates)
                   }
                 }]
               }
@@ -76,12 +84,17 @@ Promise.resolve(document.ready)
     setInterval(() => {
       var canvas = document.getElementById('canvas');
       var ctx = canvas.getContext('2d')
-      var img = images[count]
-      console.debug(img)
+      var img = images[count].img
       canvas.width = img.naturalWidth;
       canvas.height = img.naturalHeight;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, canvas.width, canvas.height);
+      geoJSONMarkerLayer.eachLayer((layer) => {
+        if (layer.feature.properties.filename == images[count].filename)
+          layer.setIcon(new L.Icon.Default())
+        else
+          layer.setIcon(greyIcon)
+      })
       count = (count + 1) % images.length;
     }, 2000)
   })
@@ -96,7 +109,11 @@ Promise.all([document.ready, configured])
       id: 'mapbox.streets',
       accessToken: config.apikeys.mapbox
     }).addTo(map);
-    geoJSONMarkerLayer = L.geoJSON().addTo(map);
+    geoJSONMarkerLayer = L.geoJSON(null, {
+      pointToLayer: (geoJsonPoint, latlng) => L.marker(latlng, {
+        icon: greyIcon
+      })
+    }).addTo(map);
     geoJSONPathLayer = L.geoJSON(null, {
       style: function(feature) {
         return {
@@ -107,3 +124,12 @@ Promise.all([document.ready, configured])
       },
     }).addTo(map);
   })
+
+var greyIcon = new L.Icon({
+  iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-grey.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
