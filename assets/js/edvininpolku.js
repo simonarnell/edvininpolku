@@ -108,8 +108,9 @@ Promise.resolve(configured).then(() => {
                 collectionEl.appendChild(sectionEl)
                 var imageEl = sectionEl.firstElementChild
                 var observer = new IntersectionObserver((entries, observer) => {
+                  var mostVisible = entries.reduce((max, entry) => entry.intersectionRatio > max.intersectionRatio ? entry : max)
                   geoJSONMarkerLayer.eachLayer((layer) => {
-                    if (layer.feature.properties.filename == entries[0].target.getAttribute('id'))
+                    if (layer.feature.properties.filename == mostVisible.target.parentElement.getAttribute('id'))
                       layer.setIcon(new L.Icon.Default())
                     else
                       layer.setIcon(greyIcon)
