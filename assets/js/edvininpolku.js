@@ -165,7 +165,9 @@ Promise.all([document.ready, configured])
       pointToLayer: (geoJsonPoint, latlng) => L.marker(latlng, {
         icon: greyIcon
       })
-    }).addTo(map);
+    }).addTo(map).on('click', (event) => {
+      document.getElementById(event.layer.feature.properties.filename).scrollIntoView();
+    });
     geoJSONPathLayer = L.geoJSON(null, {
       style: function(feature) {
         return {
