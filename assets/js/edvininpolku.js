@@ -11,15 +11,23 @@ var configured = fetch('assets/data/config.json')
   })
 
 Promise.resolve(configured).then(() => {
+  updateProgress('0', 'Querying GitHub API')
   fetch(config.urls.imagesBranch)
     .then((response) => {
       response.json().then((data) => {
         if (Array.isArray(data)) {
+          var imagesDownloaded = 0
+          var imagesProcessed = 0
           Promise.all(data.map(file => {
               return new Promise((resolve) => {
+                updateProgress('5', 'Fetching image set')
                 fetch(file.download_url)
                   .then((response) => response.blob())
                   .then((blob) => {
+                    imagesDownloaded++;
+                    var numericProgress = () => (5 + (90 * ((imagesDownloaded + imagesProcessed) / (data.length * 2)))).toFixed(1);
+                    var textualProgress = () => `${imagesDownloaded}/${data.length} downloaded; ${imagesProcessed}/${data.length} processed`
+                    updateProgress(numericProgress(), textualProgress())
                     var image = {
                       filename: file.name
                     };
@@ -84,6 +92,8 @@ Promise.resolve(configured).then(() => {
                         }
                         geoJSONMarkerLayer.addData(metadata.geoJSON)
                         map.fitBounds(geoJSONMarkerLayer.getBounds())
+                        imagesProcessed++;
+                        updateProgress(numericProgress(), textualProgress())
                         resolve(image)
                       })
                     images.push(image)
@@ -93,6 +103,7 @@ Promise.resolve(configured).then(() => {
               })
             }))
             .then((images) => {
+              updateProgress(97.5, 'sorting images chronologically')
               var sortedImages = images.sort((a, b) => a.metadata.timestamp - b.metadata.timestamp)
               sortedImages.forEach((image) => {
                 var scriptEl = document.createElement('script');
@@ -140,6 +151,7 @@ Promise.resolve(configured).then(() => {
               }
             })
             .then((geoJSONPath) => {
+              updateProgress(100, 'rendering path')
               geoJSONPathLayer.addData(geoJSONPath)
             })
         }
@@ -177,7 +189,7 @@ Promise.all([document.ready, configured])
           color: "black",
           weight: 5
         };
-      },
+      }
     }).addTo(map);
   })
 
@@ -189,3 +201,17 @@ var greyIcon = new L.Icon({
   popupAnchor: [1, -34],
   shadowSize: [41, 41]
 });
+
+function updateProgress(percent, text) {
+  var barEl = document.getElementById('progress-graphic')
+  barEl.style.width = `${percent}%`
+  var progressTextEl = document.getElementById('progress-text')
+  progressTextEl.innerHTML = `${text} - ${percent}%`
+  if (percent == 100) {
+    document.getElementById('sidebar-progress-bar').style.opacity = 0;
+    setTimeout(() => {
+      var sidebarEl = document.getElementById('sidebar-progress-bar')
+      sidebarEl.parentNode.removeChild(sidebarEl)
+    }, 1000)
+  }
+}
