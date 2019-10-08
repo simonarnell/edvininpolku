@@ -22,6 +22,7 @@
 .sculpture,
 .sidebar {
   padding: 15px;
+  border-radius: 10px;
   background-color: rgb(241, 224, 197);
 }
 
