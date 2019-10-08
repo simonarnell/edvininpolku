@@ -15,7 +15,7 @@
 .collection {
   display: flex;
   flex-direction: column;
-  width: 65%;
+  width: 66%;
 }
 
 .header,
@@ -27,6 +27,7 @@
 
 .sculpture {
   margin-bottom: 15px;
+  margin-right: 15px;
 }
 
 .sculpture:last-child {
