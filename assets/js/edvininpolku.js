@@ -106,6 +106,7 @@ Promise.resolve(configured).then(() => {
                 sectionEl.appendChild(image.img)
                 var collectionEl = document.getElementsByClassName('collection')[0]
                 collectionEl.appendChild(sectionEl)
+                var imageEl = sectionEl.firstElementChild
                 var observer = new IntersectionObserver((entries, observer) => {
                   geoJSONMarkerLayer.eachLayer((layer) => {
                     if (layer.feature.properties.filename == entries[0].target.getAttribute('id'))
@@ -118,7 +119,7 @@ Promise.resolve(configured).then(() => {
                   rootMargin: '0px',
                   threshold: 0.60
                 });
-                observer.observe(sectionEl);
+                observer.observe(imageEl);
               })
               return sortedImages;
             })
