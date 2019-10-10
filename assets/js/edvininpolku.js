@@ -13,17 +13,17 @@ var configured = fetch('assets/data/config.json')
 Promise.resolve(configured).then(() => {
   updateProgress('0', 'Querying GitHub API')
   fetch(config.urls.imagesBranch)
-    .then((response) => {
-      response.json().then((data) => {
+    .then(response => {
+      response.json().then(data => {
         if (Array.isArray(data)) {
           var imagesDownloaded = 0
           var imagesProcessed = 0
           Promise.all(data.map(file => {
-              return new Promise((resolve) => {
+              return new Promise(resolve => {
                 updateProgress('5', 'Fetching image set')
                 fetch(file.download_url)
-                  .then((response) => response.blob())
-                  .then((blob) => {
+                  .then(response => response.blob())
+                  .then(blob => {
                     imagesDownloaded++;
                     var numericProgress = () => (5 + (90 * ((imagesDownloaded + imagesProcessed) / (data.length * 2)))).toFixed(1);
                     var textualProgress = () => `${imagesDownloaded}/${data.length} downloaded; ${imagesProcessed}/${data.length} processed`
@@ -35,7 +35,7 @@ Promise.resolve(configured).then(() => {
                     img.src = URL.createObjectURL(blob);
                     image.img = img
                     var fileReader = new FileReader();
-                    new Promise((resolve) => {
+                    new Promise(resolve => {
                         fileReader.onload = (event) => {
                           var buffer = event.target.result;
                           var webworker = new Worker('assets/js/exif-webworker.js');
@@ -44,7 +44,7 @@ Promise.resolve(configured).then(() => {
                         }
                         fileReader.readAsArrayBuffer(blob);
                       })
-                      .then((metadata) => {
+                      .then(metadata => {
                         image.metadata = metadata
                         image.metadata.geoJSON.properties.filename = file.name
                         var templatePath = 'assets/data/templates/jSONLD/'
@@ -82,13 +82,13 @@ Promise.resolve(configured).then(() => {
                     images.push(image)
                     return image
                   })
-                  .catch((err) => console.error('error fetching image :- ', err))
+                  .catch(err => console.error('error fetching image :- ', err))
               })
             }))
-            .then((images) => {
+            .then(images => {
               updateProgress(97.5, 'sorting images chronologically')
               var sortedImages = images.sort((a, b) => a.metadata.timestamp - b.metadata.timestamp)
-              sortedImages.forEach((image) => {
+              sortedImages.forEach(image => {
                 var scriptEl = document.createElement('script');
                 scriptEl.setAttribute('type', 'application/ld+json');
                 scriptEl.innerHTML = JSON.stringify(image.jsonld);
@@ -103,7 +103,7 @@ Promise.resolve(configured).then(() => {
                 var imageEl = sectionEl.firstElementChild
                 var observer = new IntersectionObserver((entries, observer) => {
                   var mostVisible = entries.reduce((max, entry) => entry.intersectionRatio > max.intersectionRatio ? entry : max)
-                  geoJSONMarkerLayer.eachLayer((layer) => {
+                  geoJSONMarkerLayer.eachLayer(layer => {
                     if (layer.feature.properties.filename == mostVisible.target.parentElement.getAttribute('id'))
                       layer.setIcon(new L.Icon.Default())
                     else
@@ -118,7 +118,7 @@ Promise.resolve(configured).then(() => {
               })
               return sortedImages;
             })
-            .then((images) => {
+            .then(images => {
               this.images = images;
               var templatePath = "/assets/data/templates/geoJSON/"
               Promise.all(['featureCollection.json', 'feature.json', 'lineString.json'].map(filename => {
