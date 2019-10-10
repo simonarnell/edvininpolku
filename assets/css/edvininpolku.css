@@ -7,6 +7,12 @@
   margin-bottom: 15px
 }
 
+.forkme {
+  position: absolute;
+  top: 0px;
+  right: 0px
+}
+
 .article {
   display: flex;
   justify-content: space-between;
@@ -35,7 +41,7 @@
   margin-bottom: 0px;
 }
 
-img {
+.sculpture-photo {
   display: block;
   width: 80%;
   margin-left: auto;

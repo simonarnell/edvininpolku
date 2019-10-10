@@ -101,6 +101,7 @@ Promise.resolve(configured).then(() => {
                 var collectionEl = document.getElementsByClassName('collection')[0]
                 collectionEl.appendChild(sectionEl)
                 var imageEl = sectionEl.firstElementChild
+                imageEl.setAttribute("class", "sculpture-photo")
                 var observer = new IntersectionObserver((entries, observer) => {
                   var mostVisible = entries.reduce((max, entry) => entry.intersectionRatio > max.intersectionRatio ? entry : max)
                   geoJSONMarkerLayer.eachLayer(layer => {
