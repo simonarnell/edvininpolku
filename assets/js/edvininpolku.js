@@ -120,7 +120,7 @@ Promise.resolve(configured).then(() => {
             })
             .then(images => {
               this.images = images;
-              var templatePath = "/assets/data/templates/geoJSON/"
+              var templatePath = "assets/data/templates/geoJSON/"
               Promise.all(['featureCollection.json', 'feature.json', 'lineString.json'].map(filename => {
                   return fetch(templatePath + filename)
                     .then(response => response.json())
