@@ -47,49 +47,32 @@ Promise.resolve(configured).then(() => {
                       .then((metadata) => {
                         image.metadata = metadata
                         image.metadata.geoJSON.properties.filename = file.name
-                        image.jsonld = {
-                          "@context": "http://schema.org",
-                          "@type": "Sculpture",
-                          "image": file.download_url,
-                          "author": {
-                            "@type": "Person",
-                            "name": "Edvin Hevonkoski",
-                            "sameAs": "https://en.wikipedia.org/wiki/Edvin_Hevonkoski"
-                          },
-                          "spatial": {
-                            "@type": "Place",
-                            "geo": {
-                              "@type": "GeoCoordinates",
-                              "latitude": image.metadata.geoJSON.geometry.coordinates[1],
-                              "longitude": image.metadata.geoJSON.geometry.coordinates[0]
-                            },
-                            "containedInPlace": {
-                              "@type": "Park",
-                              "name": "Edvininpolku",
-                              "alternateName": "Edvin's Art Park",
-                              "address": {
-                                "@type": "PostalAddress",
-                                "addressCountry": {
-                                  "@type": "Country",
-                                  "name": "FI"
-                                },
-                                "addressLocality": "Asevelikylä",
-                                "addressRegion": "Vaasa",
-                                "postalCode": "65300",
-                                "streetAddress": "Aleksis Kiventie 57"
-                              },
-                              "geo": {
-                                "@type": "GeoCoordinates",
-                                "latitude": "63.105246",
-                                "longitude": "21.664820"
-                              },
-                              "sameAs": [
-                                "https://fi.wikipedia.org/wiki/Edvininpolku",
-                                "https://www.vaasa.fi/asu-ja-ela/vapaa-aika/puistot-ja-viheralueet/puistot/edvininpolun-puisto/"
-                              ]
-                            }
-                          }
-                        }
+                        var templatePath = 'assets/data/templates/jSONLD/'
+                        fetch(templatePath + 'object.json')
+                          .then(response => response.json())
+                          .then(objectJsonLDTemplate => {
+                            Promise.all(['objectAuthor.json', 'location.json'].map(filename => {
+                                return fetch(templatePath + filename)
+                                  .then(response => response.json())
+                                  .then(json => json)
+                              }))
+                              .then(jsons => {
+                                image.jsonld = {
+                                  ...objectJsonLDTemplate,
+                                  image: file.download_url,
+                                  author: jsons[0],
+                                  spatial: {
+                                    ...objectJsonLDTemplate.spatial,
+                                    geo: {
+                                      ...objectJsonLDTemplate.spatial.geo,
+                                      latitude: image.metadata.geoJSON.geometry.coordinates[1],
+                                      longitude: image.metadata.geoJSON.geometry.coordinates[0]
+                                    },
+                                    containedInPlace: jsons[1]
+                                  }
+                                }
+                              })
+                          })
                         geoJSONMarkerLayer.addData(metadata.geoJSON)
                         map.fitBounds(geoJSONMarkerLayer.getBounds())
                         imagesProcessed++;
@@ -137,22 +120,28 @@ Promise.resolve(configured).then(() => {
             })
             .then((images) => {
               this.images = images;
-              return {
-                type: "FeatureCollection",
-                properties: {},
-                features: [{
-                  "type": "Feature",
-                  "properties": {},
-                  "geometry": {
-                    "type": "LineString",
-                    "coordinates": images.map(image => image.metadata.geoJSON.geometry.coordinates)
+              var templatePath = "/assets/data/templates/geoJSON/"
+              Promise.all(['featureCollection.json', 'feature.json', 'lineString.json'].map(filename => {
+                  return fetch(templatePath + filename)
+                    .then(response => response.json())
+                    .then(json => json)
+                }))
+                .then(jsons => {
+                  return {
+                    ...jsons[0],
+                    features: [{
+                      ...jsons[1],
+                      geometry: {
+                        ...jsons[2],
+                        coordinates: images.map(image => image.metadata.geoJSON.geometry.coordinates)
+                      }
+                    }]
                   }
-                }]
-              }
-            })
-            .then((geoJSONPath) => {
-              updateProgress(100, 'rendering path')
-              geoJSONPathLayer.addData(geoJSONPath)
+                })
+                .then(geoJSONFeatureCollection => {
+                  updateProgress(100, 'rendering path')
+                  geoJSONPathLayer.addData(geoJSONFeatureCollection)
+                })
             })
         }
       })
@@ -163,7 +152,31 @@ document.ready = new Promise(
   (resolve) => document.addEventListener('DOMContentLoaded', resolve))
 
 Promise.resolve(document.ready)
-  .then(() => {})
+  .then(() => {
+    var templatePath = 'assets/data/templates/jSONLD/'
+    fetch(templatePath + 'website.json')
+      .then(response => response.json())
+      .then(websiteJsonLDTemplate => {
+        Promise.all(['websiteAuthor.json', 'location.json', 'objectAuthor.json'].map(filename => {
+            return fetch(templatePath + filename)
+              .then(response => response.json())
+              .then(json => json)
+          }))
+          .then(jsons => {
+            var websiteJsonLD = {
+              ...websiteJsonLDTemplate,
+              author: jsons[0],
+              about: jsons[1],
+              mentions: jsons[2]
+            }
+            var scriptEl = document.createElement('script')
+            scriptEl.setAttribute('type', 'application/ld+json')
+            scriptEl.innerHTML = JSON.stringify(websiteJsonLD)
+            document.head.appendChild(scriptEl)
+            console.log("here")
+          })
+      })
+  })
 
 Promise.all([document.ready, configured])
   .then(() => {

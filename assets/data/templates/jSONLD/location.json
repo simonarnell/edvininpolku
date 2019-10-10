@@ -1,0 +1,25 @@
+{
+  "@type": "Park",
+  "name": "Edvininpolku",
+  "alternateName": "Edvin's Art Park",
+  "address": {
+    "@type": "PostalAddress",
+    "addressCountry": {
+      "@type": "Country",
+      "name": "FI"
+    },
+    "addressLocality": "Asevelikylä",
+    "addressRegion": "Vaasa",
+    "postalCode": "65300",
+    "streetAddress": "Aleksis Kiventie 57"
+  },
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": "63.105246",
+    "longitude": "21.664820"
+  },
+  "sameAs": [
+    "https://fi.wikipedia.org/wiki/Edvininpolku",
+    "https://www.vaasa.fi/asu-ja-ela/vapaa-aika/puistot-ja-viheralueet/puistot/edvininpolun-puisto/"
+  ]
+}

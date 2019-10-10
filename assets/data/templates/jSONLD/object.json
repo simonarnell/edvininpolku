@@ -1,0 +1,15 @@
+{
+  "@context": "http://schema.org",
+  "@type": "Sculpture",
+  "image": "",
+  "author": {},
+  "spatial": {
+    "@type": "Place",
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": "",
+      "longitude": ""
+    },
+    "containedInPlace": {}
+  }
+}
