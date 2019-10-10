@@ -1,4 +1,4 @@
-var templatePath = '../assets/data/templates/geoJSON/'
+var templatePath = '../data/templates/geoJSON/'
 
 onmessage = (event) => {
   self.importScripts('../vendor/js/exif-parser-0.1.12-min.js')
