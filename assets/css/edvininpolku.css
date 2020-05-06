@@ -21,7 +21,8 @@
 .collection {
   display: flex;
   flex-direction: column;
-  width: 66%;
+  flex: 2 1 auto;
+  width: 100%;
 }
 
 .header,
@@ -49,22 +50,43 @@
 }
 
 .sidebar-container {
+  flex: 1 1 auto;
+  box-sizing: border-box;
   height: 100%;
   position: sticky;
   top: 15px;
   display: flex;
   flex-direction: column;
-  width: 33%;
-  padding-right: 30px;
 }
 
 .sidebar {
-  width: 100%;
+  box-sizing: border-box;
   margin-bottom: 15px;
 }
 
 .sidebar:last-child {
   margin-bottom: 0px;
+}
+
+@media (orientation: portrait) {
+  .article {
+    flex-wrap: wrap;
+  }
+
+  .sidebar-container {
+    order: 1;
+    top: auto;
+    margin-bottom: 15px;
+  }
+
+  .collection {
+    order: 2;
+  }
+
+  .sculpture {
+    margin-bottom: 15px;
+    margin-right: 0px;
+  }
 }
 
 body {
