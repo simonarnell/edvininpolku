@@ -4,7 +4,7 @@ var config
 var map
 var geoJSONMarkerLayer, geoJSONPathLayer;
 
-var configured = fetch('assets/data/config.json')
+var configured = fetch('resources/data/config.json')
   .then(response => response.json())
   .then(json => {
     config = json
@@ -38,7 +38,7 @@ Promise.resolve(configured).then(() => {
                     new Promise(resolve => {
                         fileReader.onload = (event) => {
                           var buffer = event.target.result;
-                          var webworker = new Worker('assets/js/exif-webworker.js');
+                          var webworker = new Worker('resources/js/exif-webworker.js');
                           webworker.onmessage = (event) => resolve(JSON.parse(event.data))
                           webworker.postMessage(buffer, [buffer])
                         }
@@ -47,7 +47,7 @@ Promise.resolve(configured).then(() => {
                       .then(metadata => {
                         image.metadata = metadata
                         image.metadata.geoJSON.properties.filename = file.name
-                        var templatePath = 'assets/data/templates/jSONLD/'
+                        var templatePath = 'resources/data/templates/jSONLD/'
                         fetch(templatePath + 'object.json')
                           .then(response => response.json())
                           .then(objectJsonLDTemplate => {
@@ -121,7 +121,7 @@ Promise.resolve(configured).then(() => {
             })
             .then(images => {
               this.images = images;
-              var templatePath = "assets/data/templates/geoJSON/"
+              var templatePath = "resources/data/templates/geoJSON/"
               Promise.all(['featureCollection.json', 'feature.json', 'lineString.json'].map(filename => {
                   return fetch(templatePath + filename)
                     .then(response => response.json())
@@ -154,7 +154,7 @@ document.ready = new Promise(
 
 Promise.resolve(document.ready)
   .then(() => {
-    var templatePath = 'assets/data/templates/jSONLD/'
+    var templatePath = 'resources/data/templates/jSONLD/'
     fetch(templatePath + 'website.json')
       .then(response => response.json())
       .then(websiteJsonLDTemplate => {
